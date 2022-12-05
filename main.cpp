@@ -1,70 +1,129 @@
-#include <stdio.h>
-#include<list>
-#include<vector>
+#include "DxLib.h"
+#include"SceneManager.h"
 
-int main(void)
-{
-	//駅番号
-	int num = 1;
+// ウィンドウのタイトルに表示する文字列
+const char TITLE[] = "LE2A_07_サノユウヤ: タイトル";
 
-	std::list<const char*>yamanoteLine{
-		"Tokyo", "Kanda","Akihabara","Okachimachi","Ueno",
-		"Uguisudani","Nippori","Tabata","Komagome","Sugamo","Otsuka",
-		"Ikebukuro","Mejiro","Takadanobaba","Shin-Okubo","Shinjuku",
-		"Yoyogi","Harajuku","Shibuya","Ebisu","Meguro",
-		"Gotanda","Osaki","Shinagawa","Tamachi","Hamamatsucho",
-		"Shimbashi","Yurakucho"
-	};
+// ウィンドウ横幅
+const int WIN_WIDTH = 600;
 
-	//一覧を表示
-	printf("1970年当時の山手線駅一覧(英語名)\n");
-	for (const char* station : yamanoteLine)
-	{
-		printf("JY%02d:%s\n", num, station);
-		station++;
-	}
-	printf("\n");
+// ウィンドウ縦幅
+const int WIN_HEIGHT = 400;
 
-	//日暮里の前に西日暮里を追加
-	for (std::list<const char*>::iterator itr = yamanoteLine.begin(); itr != yamanoteLine.end(); ++itr)
-	{
-		if (*itr == "Nippori")
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine,
+                   _In_ int nCmdShow) {
+	// ウィンドウモードに設定
+	ChangeWindowMode(TRUE);
+
+	// ウィンドウサイズを手動では変更させず、
+	// かつウィンドウサイズに合わせて拡大できないようにする
+	SetWindowSizeChangeEnableFlag(FALSE, FALSE);
+
+	// タイトルを変更
+	SetMainWindowText(TITLE);
+
+	// 画面サイズの最大サイズ、カラービット数を設定(モニターの解像度に合わせる)
+	SetGraphMode(WIN_WIDTH, WIN_HEIGHT, 32);
+
+	// 画面サイズを設定(解像度との比率で設定)
+	SetWindowSizeExtendRate(1.0);
+
+	// 画面の背景色を設定する
+	SetBackgroundColor(0x00, 0x00, 0x00);
+
+	// DXlibの初期化
+	if (DxLib_Init() == -1) { return -1; }
+
+	// (ダブルバッファ)描画先グラフィック領域は裏面を指定
+	SetDrawScreen(DX_SCREEN_BACK);
+
+	// 画像などのリソースデータの変数宣言と読み込み
+
+
+	// ゲームループで使う変数の宣言
+
+	SceneManager* sceneManager = SceneManager::GetInstance();//シーンマネージャークラス読み込み
+	int scene = 0;
+
+	// 最新のキーボード情報用
+	char keys[256] = {0};
+
+	// 1ループ(フレーム)前のキーボード情報
+	char oldkeys[256] = {0};
+
+	// ゲームループ
+	while (true) {
+		// 最新のキーボード情報だったものは1フレーム前のキーボード情報として保存
+		for (int i = 0; i < 256; ++i)
 		{
-			itr = yamanoteLine.insert(itr, "Nishi-Nippori");
+			oldkeys[i] = keys[i];
+		}
+		//配列なのでoldkey = keys;のようにできない、要素を一つずつコピー
+		
+		// 最新のキーボード情報を取得
+		GetHitKeyStateAll(keys);
+
+		// 画面クリア
+		ClearDrawScreen();
+		//---------  ここからプログラムを記述  ----------//
+
+		// 更新処理
+		if (keys[KEY_INPUT_SPACE] == 1 && oldkeys[KEY_INPUT_SPACE] == 0)
+		{
+			sceneManager->ChangeScene(scene);
+		}
+
+		// 描画処理
+		switch (static_cast<Scene>(scene))
+		{
+		case Scene::Title:
+
+			DrawBox(0, 0, 600, 400, GetColor(100, 0, 0), true);
+
+			break;
+
+		case Scene::NewGame:
+
+			DrawBox(0, 0, 600, 400, GetColor(0, 100, 0), true);
+
+			break;
+
+		case Scene::GamePlay:
+
+			DrawBox(0, 0, 600, 400, GetColor(0, 0, 100), true);
+
+			break;
+
+		case Scene::GameClear:
+
+			DrawBox(0, 0, 600, 400, GetColor(100, 100, 0), true);
 
 			break;
 		}
-	}
 
-	//一覧を表示
-	num = 1;
-	printf("2019年当時の山手線駅一覧(英語名)\n");
-	for (const char* station : yamanoteLine)
-	{
-		printf("JY%02d:%s\n", num, station);
-		num++;
-	}
-	printf("\n");
+		DrawFormatString(100, 100, GetColor(200, 200, 200), "sceneNo : %d", scene);
+		DrawFormatString(100, 120, GetColor(200, 200, 200), "Press Space to Scene Change");
 
-	//品川の前に高輪ゲートウェイを追加
-	for (std::list<const char*>::iterator itr = yamanoteLine.begin(); itr != yamanoteLine.end(); ++itr)
-	{
-		if (*itr == "Shinagawa")
-		{
-			itr = yamanoteLine.insert(itr, "Takanawa Gateway");
+		//---------  ここまでにプログラムを記述  ---------//
+		// (ダブルバッファ)裏面
+		ScreenFlip();
 
+		// 20ミリ秒待機(疑似60FPS)
+		WaitTimer(20);
+
+		// Windowsシステムからくる情報を処理する
+		if (ProcessMessage() == -1) {
+			break;
+		}
+
+		// ESCキーが押されたらループから抜ける
+		if (CheckHitKey(KEY_INPUT_ESCAPE) == 1) {
 			break;
 		}
 	}
+	// Dxライブラリ終了処理
+	DxLib_End();
 
-	//一覧を表示
-	num = 1;
-	printf("2022年当時の山手線駅一覧(英語名)\n");
-	for (const char* station : yamanoteLine)
-	{
-		printf("JY%02d:%s\n", num, station);
-		num++;
-	}
-
+	// 正常終了
 	return 0;
 }
