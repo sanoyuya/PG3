@@ -27,19 +27,23 @@ int main()
 	//“G‚Ìó‘Ô•\¦
 	for (std::unique_ptr<Enemy >& enemy : enemys)
 	{
-		enemy->Draw();
+		enemy->Update();
 	}
-	printf("\n");
-
-	//“G‚ğEŠQ
-	enemys[0]->Update();
 	printf("\n");
 
 	//“G‚Ìó‘Ô•\¦
 	for (std::unique_ptr<Enemy >& enemy : enemys)
 	{
-		enemy->Draw();
+		enemy->Update();
 	}
+	printf("\n");
+
+	//“G‚Ìó‘Ô•\¦
+	for (std::unique_ptr<Enemy >& enemy : enemys)
+	{
+		enemy->Update();
+	}
+	printf("\n");
 
 	enemys.clear();
 

@@ -2,32 +2,37 @@
 #include<stdio.h>
 #include<Windows.h>
 
-bool Enemy::isAlive = true;
+void (Enemy::* Enemy::stateTable[])() =
+{
+	&Enemy::Approach,
+	&Enemy::Attack,
+	&Enemy::Escape,
+};
 
 void Enemy::Initialize()
 {
 	printf("“G‚ğ¶¬\n");
+	state = EnemyState::APPROACH;
 }
 
 void Enemy::Update()
 {
-	Kill();
+	(this->*stateTable[static_cast<size_t>(state)])();
 }
 
-void Enemy::Draw()
+void Enemy::Approach()
 {
-	if (isAlive)
-	{
-		printf("“G‚ª¶‚«‚Ä‚¢‚é\n");
-	}
-	else
-	{
-		printf("“G‚ª€‚ñ‚Å‚¢‚é\n");
-	}
+	printf("“G‚ªÚ‹ß\n");
+	state = EnemyState::ATTACK;
 }
 
-void Enemy::Kill()
+void Enemy::Attack()
 {
-	isAlive = false;
-	printf("“G‚ª€‚ñ‚¾\n");
+	printf("“G‚ÌUŒ‚\n");
+	state = EnemyState::ESCAPE;
+}
+
+void Enemy::Escape()
+{
+	printf("“G‚ª“¦‚°‚½\n");
 }

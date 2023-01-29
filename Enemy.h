@@ -1,9 +1,19 @@
 #pragma once
+
+enum class EnemyState
+{
+	APPROACH,
+	ATTACK,
+	ESCAPE,
+};
+
 class Enemy
 {
 private:
 
-	static bool isAlive;
+	EnemyState state;
+
+	static void (Enemy::* stateTable[])();
 
 public:
 
@@ -21,14 +31,17 @@ public:
 	void Update();
 
 	/// <summary>
-	/// •`‰æˆ—
+	/// Ú‹ß
 	/// </summary>
-	void Draw();
-
-private:
+	void Approach();
 
 	/// <summary>
-	/// “G‚ğE‚·
+	/// UŒ‚
 	/// </summary>
-	void Kill();
+	void Attack();
+
+	/// <summary>
+	/// “¦–S
+	/// </summary>
+	void Escape();
 };
